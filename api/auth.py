@@ -61,6 +61,9 @@ async def login(
         # 设置CUSTOMER_CODE Cookie（存储用户email）
         session.set_customer_code_cookie(user.email)
         
+        # 设置CUSTOMERID Cookie（存储用户ID）
+        session.set_customerid_cookie(user.id)
+        
         return {
             "success": True,
             "code": 200,
@@ -155,7 +158,8 @@ async def check_login(
             "user_email": user_email,
             "user_role": user_role,
             "login_time": login_time,
-            "customer_code": session.get_customer_code()
+            "customer_code": session.get_customer_code(),
+            "customerid": session.get_customerid()
         }
 
     except Exception as e:

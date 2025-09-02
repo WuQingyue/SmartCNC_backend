@@ -30,12 +30,8 @@ class User(Base):
                        onupdate=datetime.utcnow, comment='账户最后更新时间')
 
     # 添加关联关系（如果需要的话）
-    # uploads = relationship("UploadHistory", back_populates="user", cascade="all, delete")
-    # orders = relationship("Order", back_populates="user", cascade="all, delete")
-    # addresses = relationship("Address", back_populates="user", cascade="all, delete")
-    # contacts = relationship("Contact", back_populates="user", cascade="all, delete")
-    # invoice_infos = relationship("InvoiceInfo", back_populates="user", cascade="all, delete")
-    # shopping_cart = relationship("ShoppingCart", back_populates="user", cascade="all, delete")
+    files = relationship("Files", back_populates="user", cascade="all, delete")
+    addresses = relationship("Address", back_populates="user", cascade="all, delete")
 
     def __repr__(self):
         """返回用户对象的字符串表示"""

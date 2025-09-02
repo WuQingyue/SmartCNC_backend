@@ -32,6 +32,7 @@ class SessionManager:
         self.response = response
         self.SESSIONID = None
         self.CUSTOMER_CODE = None  # 添加CUSTOMER_CODE属性
+        self.CUSTOMERID = None  # 添加CUSTOMERID属性
         self.session_data = {}
     
     def is_session_expired(self, session_id: str) -> bool:
@@ -69,6 +70,13 @@ class SessionManager:
             # 删除CUSTOMER_CODE Cookie
             self.response.delete_cookie(
                 "CUSTOMER_CODE",
+                domain=settings.SESSION_COOKIE_DOMAIN,
+                path="/"
+            )
+            
+            # 删除CUSTOMERID Cookie
+            self.response.delete_cookie(
+                "CUSTOMERID",
                 domain=settings.SESSION_COOKIE_DOMAIN,
                 path="/"
             )
@@ -134,6 +142,40 @@ class SessionManager:
         except Exception as e:
             print(f"设置CUSTOMER_CODE Cookie失败: {str(e)}")
     
+    def set_customerid_cookie(self, user_id: int):
+        """
+        设置CUSTOMERID Cookie的方法
+        """
+        if not self.response or not user_id:
+            return
+
+        try:
+            # 设置CUSTOMERID属性
+            self.CUSTOMERID = str(user_id)
+            print(f"🔧 设置CUSTOMERID Cookie - 用户ID: {self.CUSTOMERID}")
+            
+            # 设置CUSTOMERID Cookie（非HttpOnly，允许前端访问）
+            self.response.set_cookie(
+                key="CUSTOMERID",
+                value=str(user_id),
+                max_age=settings.SESSION_EXPIRE_SECONDS,
+                domain=settings.SESSION_COOKIE_DOMAIN,
+                path="/",
+                secure=settings.SESSION_COOKIE_SECURE,
+                samesite=settings.SESSION_COOKIE_SAMESITE,
+                httponly=False  # 允许JavaScript访问
+            )
+        except Exception as e:
+            print(f"设置CUSTOMERID Cookie失败: {str(e)}")
+    
+    def get_customer_code(self) -> Optional[str]:
+        """获取CUSTOMER_CODE"""
+        return self.CUSTOMER_CODE
+    
+    def get_customerid(self) -> Optional[str]:
+        """获取CUSTOMERID"""
+        return self.CUSTOMERID
+    
     async def load_session(self):
         """
         加载或创建session数据。
@@ -142,6 +184,7 @@ class SessionManager:
         """
         self.SESSIONID = self.request.cookies.get("SESSIONID")
         self.CUSTOMER_CODE = self.request.cookies.get("CUSTOMER_CODE")  # 加载CUSTOMER_CODE
+        self.CUSTOMERID = self.request.cookies.get("CUSTOMERID")  # 加载CUSTOMERID
         
         session_is_valid = False
         
@@ -156,6 +199,7 @@ class SessionManager:
                     # 重置session相关数据
                     self.SESSIONID = None
                     self.CUSTOMER_CODE = None
+                    self.CUSTOMERID = None
                     self.session_data = {}
                 else:
                     # session未过期，尝试加载数据
@@ -173,6 +217,7 @@ class SessionManager:
         if not session_is_valid:
             self.SESSIONID = str(uuid.uuid4())
             self.CUSTOMER_CODE = None  # 重置CUSTOMER_CODE
+            self.CUSTOMERID = None  # 重置CUSTOMERID
             self.session_data = {}
             
             print(f"🆕 创建新session: {self.SESSIONID}")
@@ -225,6 +270,7 @@ class SessionManager:
         self.session_data = {}
         self.SESSIONID = None
         self.CUSTOMER_CODE = None  # 清除CUSTOMER_CODE
+        self.CUSTOMERID = None  # 清除CUSTOMERID
         
         # 删除浏览器中的Cookie
         if self.response:
@@ -236,6 +282,12 @@ class SessionManager:
             # 同时删除CUSTOMER_CODE Cookie
             self.response.delete_cookie(
                 "CUSTOMER_CODE",
+                domain=settings.SESSION_COOKIE_DOMAIN,
+                path="/"
+            )
+            # 同时删除CUSTOMERID Cookie
+            self.response.delete_cookie(
+                "CUSTOMERID",
                 domain=settings.SESSION_COOKIE_DOMAIN,
                 path="/"
             )

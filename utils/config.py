@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     YT_USERNAME: str
     YT_PASSWORD: str
 
+    # 运费配置
+    JLC_FREIGHT_RATIO: float   # JLC运费比例，默认95%
+    YT_FREIGHT_RATIO: float   # YT运费比例，默认90%
+
+
     class Config:
         env_file = ".env"
         case_sensitive = True

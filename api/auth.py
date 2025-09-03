@@ -31,7 +31,7 @@ async def login(
             # 登录失败，清除session和cookie
             session.clear()
             raise HTTPException(
-                code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="请检查邮箱是否存在"
             )
         
@@ -41,7 +41,7 @@ async def login(
             # 登录失败，清除session和cookie
             session.clear()
             raise HTTPException(
-                code=status.HTTP_401_UNAUTHORIZED,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="请检查密码是否正确"
             )
         
@@ -81,7 +81,7 @@ async def login(
         # 其他异常情况下也清除session和cookie
         session.clear()
         raise HTTPException(
-            code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="登录失败，请稍后重试"
         )
 
@@ -100,7 +100,7 @@ async def register(
         existing_user = db.query(User).filter(User.email == user_data.get('email')).first()
         if existing_user:
             raise HTTPException(
-                code=status.HTTP_409_CONFLICT,
+                status_code=status.HTTP_409_CONFLICT,
                 detail="邮箱已被注册"
             )
         
@@ -128,7 +128,7 @@ async def register(
     except Exception as e:
         print(f"注册失败: {str(e)}")
         raise HTTPException(
-            code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="注册失败，请稍后重试"
         )
    
@@ -165,7 +165,7 @@ async def check_login(
     except Exception as e:
         print(f"获取用户信息失败: {str(e)}")
         raise HTTPException(
-            code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="获取用户信息失败，请重新登录"
         )
 
@@ -202,7 +202,7 @@ async def logout(
     except Exception as e:
         print(f"登出失败: {str(e)}")
         raise HTTPException(
-            code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="登出失败，请稍后重试"
         )
 

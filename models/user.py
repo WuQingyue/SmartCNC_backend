@@ -32,6 +32,7 @@ class User(Base):
     # 添加关联关系（如果需要的话）
     files = relationship("Files", back_populates="user", cascade="all, delete")
     addresses = relationship("Address", back_populates="user", cascade="all, delete")
+    orders = relationship("Order", back_populates="user", cascade="all, delete")
 
     def __repr__(self):
         """返回用户对象的字符串表示"""

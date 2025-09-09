@@ -37,7 +37,7 @@ class Files(Base):
 
     # 添加关联关系
     user = relationship("User", back_populates="files")
-    part_details = relationship("PartDetails", back_populates="file", cascade="all, delete")
+    part_details = relationship("PartDetails", back_populates="file", cascade="all, delete", lazy="dynamic")
 
     def __repr__(self):
         """返回文件对象的字符串表示"""

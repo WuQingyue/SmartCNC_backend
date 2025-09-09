@@ -33,10 +33,10 @@ class Order(Base):
                        onupdate=datetime.utcnow, comment='订单最后更新时间')
 
     # 关联关系 - 与用户表的关系
-    user = relationship("User", back_populates="orders")
+    user = relationship("User", back_populates="orders", lazy="select")
     
     # 关联关系 - 与零件详情表的关系
-    part_details = relationship("PartDetails", back_populates="orders")
+    part_details = relationship("PartDetails", back_populates="orders", lazy="select")
 
     def __repr__(self):
         """返回订单对象的字符串表示"""
@@ -88,7 +88,7 @@ class Order(Base):
     def create_order(cls, db_session, user_id: int, order_number: str, 
                     part_details_id: int, status: str = "待审核", 
                     order_code: str = None, logistics_info_id: int = None):
-        """创建新订单"""
+        """创建新订单（使用现有的零件详情）"""
         order = cls(
             user_id=user_id,
             order_number=order_number,
@@ -98,6 +98,78 @@ class Order(Base):
             status=status
         )
         db_session.add(order)
+        db_session.commit()
+        db_session.refresh(order)
+        return order
+
+    @classmethod
+    def create_order_with_new_part_details(cls, db_session, user_id: int, order_number: str,
+                                         file_id: int, status: str = "待审核", 
+                                         order_code: str = None, logistics_info_id: int = None, **part_kwargs):
+        """创建订单并为其创建独立的零件详情"""
+        from models.part_details import PartDetails
+        
+        # 先创建订单
+        order = cls(
+            user_id=user_id,
+            order_number=order_number,
+            order_code=order_code,
+            part_details_id=None,  # 临时设为None
+            logistics_info_id=logistics_info_id,
+            status=status
+        )
+        db_session.add(order)
+        db_session.flush()  # 获取order的ID但不提交
+        
+        # 为订单创建独立的零件详情
+        part_details = PartDetails.create_for_order(
+            db_session=db_session,
+            file_id=file_id,
+            order_id=order.id,
+            **part_kwargs
+        )
+        
+        # 更新订单的part_details_id
+        order.part_details_id = part_details.id
+        db_session.commit()
+        db_session.refresh(order)
+        return order
+
+    @classmethod
+    def create_order_from_cart_item(cls, db_session, user_id: int, order_number: str,
+                                   cart_item_id: int, status: str = "待审核",
+                                   order_code: str = None, logistics_info_id: int = None):
+        """从购物车项创建订单（复制零件详情）"""
+        from models.part_details import PartDetails
+        from models.cart_item import CartItem
+        
+        # 获取购物车项
+        cart_item = CartItem.get_cart_item_by_id(db_session, cart_item_id, user_id)
+        if not cart_item:
+            raise ValueError("购物车项不存在")
+        
+        # 先创建订单
+        order = cls(
+            user_id=user_id,
+            order_number=order_number,
+            order_code=order_code,
+            part_details_id=None,  # 临时设为None
+            logistics_info_id=logistics_info_id,
+            status=status
+        )
+        db_session.add(order)
+        db_session.flush()  # 获取order的ID但不提交
+        
+        # 复制购物车项的零件详情到订单
+        part_details = PartDetails.copy_part_details(
+            db_session=db_session,
+            source_part_details=cart_item.part_details,
+            record_type='order',
+            source_id=order.id
+        )
+        
+        # 更新订单的part_details_id
+        order.part_details_id = part_details.id
         db_session.commit()
         db_session.refresh(order)
         return order

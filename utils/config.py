@@ -48,6 +48,11 @@ class Settings(BaseSettings):
     JLC_FREIGHT_RATIO: float   # JLC运费比例，默认95%
     YT_FREIGHT_RATIO: float   # YT运费比例，默认90%
 
+    # 汇率转换
+    APP_ID: str
+    SYMBOLS: str
+    BASE: str
+
 
     class Config:
         env_file = ".env"

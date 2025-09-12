@@ -33,6 +33,7 @@ class User(Base):
     files = relationship("Files", back_populates="user", cascade="all, delete")
     addresses = relationship("Address", back_populates="user", cascade="all, delete")
     orders = relationship("Order", back_populates="user", cascade="all, delete")
+    cart_items = relationship("CartItem", back_populates="user", cascade="all, delete")
 
     def __repr__(self):
         """返回用户对象的字符串表示"""

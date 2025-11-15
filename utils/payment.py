@@ -16,7 +16,7 @@ def get_paypal_access_token():
             "Content-Type": "application/x-www-form-urlencoded"
         }
 
-        # 获取访问令牌
+        # 获取访问令牌 
         token_url = "https://api.paypal.com/v1/oauth2/token"
         response = requests.post(
             token_url,

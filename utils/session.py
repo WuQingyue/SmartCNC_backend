@@ -123,21 +123,20 @@ class SessionManager:
             return
 
         try:
-            # 设置CUSTOMER_CODE属性
-            self.CUSTOMER_CODE = email
-            print(email)
-            print(f"🔧 设置CUSTOMER_CODE Cookie - 原始值: '{self.CUSTOMER_CODE}'")
+            # 设置CUSTOMER_CODE属性（取邮箱@之前的部分）
+            self.CUSTOMER_CODE = email.split('@')[0] if '@' in email else email
+            print(f"🔧 设置CUSTOMER_CODE Cookie - 原始邮箱: {email}, 提取的用户名: {self.CUSTOMER_CODE}")
             
             # 设置CUSTOMER_CODE Cookie（非HttpOnly，允许前端访问）
             self.response.set_cookie(
                 key="CUSTOMER_CODE",
-                value=email,
+                value=self.CUSTOMER_CODE,
                 max_age=settings.SESSION_EXPIRE_SECONDS,
                 domain=settings.SESSION_COOKIE_DOMAIN,
                 path="/",
                 secure=settings.SESSION_COOKIE_SECURE,
                 samesite=settings.SESSION_COOKIE_SAMESITE,
-                httponly=False  # 允许JavaScript访问
+                httponly=False
             )
         except Exception as e:
             print(f"设置CUSTOMER_CODE Cookie失败: {str(e)}")

@@ -201,6 +201,7 @@ async def login(
             "user": {
                 "id": user.id,
                 "email": user.email,
+                "role": user.role
             }
         }
 
@@ -343,4 +344,61 @@ async def register(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="注册失败，请稍后重试"
         )
-   
+
+# 用户身份验证接口
+@router.post("/check_user_identity")
+async def check_user_identity(
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    session: SessionManager = Depends(get_session)
+    ):
+    """
+    验证用户身份状态
+    检查用户是否已登录，session是否有效，并返回用户基本信息
+    """
+    try:
+        # 获取请求中的email
+        user_data = await request.json()
+        user_id = user_data.get('user_id')
+        print(f"接收到的用户数据: {user_id}")
+        # 验证email是否提供
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="请提供完整信息"
+            )
+        
+        
+        # 从数据库中查找用户
+        user = db.query(User).filter(User.id == user_id).first()
+        print(f"数据库中找到的用户: {user}")
+        if not user:
+            print(f"❌ 数据库中未找到用户: {user.email}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="用户不存在"
+            )
+
+        # 返回用户信息
+        return {
+            "success": True,
+            "code": 200,
+            "user": {
+                "user_id": user.id,
+                "user_email": user.email,
+                "user_name": user.email.split('@')[0] if '@' in user.email else user.email,
+                "role": user.role
+            }
+            }
+        
+        
+    except HTTPException:
+        # 重新抛出HTTP异常，让前端知道具体的错误原因
+        raise
+    except Exception as e:
+        print(f"❌ 身份验证过程中发生未知错误: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="身份验证失败，请稍后重试"
+        )
